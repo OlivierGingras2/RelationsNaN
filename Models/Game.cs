@@ -10,10 +10,14 @@ namespace RelationsNaN.Models
         public int ReleaseYear { get; set; }
 
         public int? GenreId { get; set; }
+
         [ValidateNever]
         public Genre? Genre { get; set; }
 
         [ValidateNever]
         public List<Platform> Platforms { get; set; }
+
+        [ValidateNever]
+        public List<GamePurchase> GamePurchases { get; set; }
     }
 }
