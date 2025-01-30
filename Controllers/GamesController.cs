@@ -45,10 +45,10 @@ namespace RelationsNaN.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> RemovePlatform(int gameId, int platformId)
+        public async Task<IActionResult> RemovePlatform(int id, int platformId)
         {
             var game = await _context.Game.Include(g => g.Platforms)
-                                          .FirstOrDefaultAsync(g => g.Id == gameId);
+                                          .FirstOrDefaultAsync(g => g.Id == id);
             if (game == null)
             {
                 return NotFound();
@@ -128,7 +128,7 @@ namespace RelationsNaN.Controllers
                 return NotFound();
             }
 
-            var game = await _context.Game.FindAsync(id);
+            var game = await _context.Game.Include(g => g.Platforms).FirstOrDefaultAsync(g => g.Id ==id);
             if (game == null)
             {
                 return NotFound();
