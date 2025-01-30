@@ -19,10 +19,61 @@ namespace RelationsNaN.Controllers
             _context = context;
         }
 
+        public async Task<IActionResult> AddPlatform(int id, int platformId)
+        {
+            var game = await _context.Game.Include(g => g.Platforms).FirstOrDefaultAsync(g => g.Id == id);
+            if (game == null)
+            {
+                return NotFound();
+            }
+            var platform = await _context.Platform.FindAsync(platformId);
+            if (platform == null)
+            {
+                return NotFound();
+            }          
+
+            // Ajout de la plateforme au jeu
+            if (game.Platforms == null || game.Platforms.Count == 0)
+            {
+                game.Platforms = new List<Platform>();
+            }
+            if (!game.Platforms.Contains(platform))
+            { 
+                game.Platforms.Add(platform);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> RemovePlatform(int gameId, int platformId)
+        {
+            var game = await _context.Game.Include(g => g.Platforms)
+                                          .FirstOrDefaultAsync(g => g.Id == gameId);
+            if (game == null)
+            {
+                return NotFound();
+            }
+
+            var platform = await _context.Platform.FindAsync(platformId);
+            if (platform == null)
+            {
+                return NotFound();
+            }
+
+            // Retirer la plateforme du jeu
+            if (game.Platforms.Contains(platform))
+            {
+                game.Platforms.Remove(platform);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        #region Basic actions
         // GET: Games
         public async Task<IActionResult> Index()
         {
-            var relationsNaNContext = _context.Game.Include(g => g.Genre);
+            var relationsNaNContext = _context.Game.Include(g => g.Genre).Include(g => g.Platforms);
             return View(await relationsNaNContext.ToListAsync());
         }
 
@@ -82,6 +133,7 @@ namespace RelationsNaN.Controllers
             {
                 return NotFound();
             }
+            ViewData["PlatformId"] = new SelectList(_context.Platform, "Id", "Name", game.Platforms);
             ViewData["GenreId"] = new SelectList(_context.Genre, "Id", "Name", game.GenreId);
             return View(game);
         }
@@ -118,6 +170,7 @@ namespace RelationsNaN.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["PlatformId"] = new SelectList(_context.Platform, "Id", "Name", game.Platforms);
             ViewData["GenreId"] = new SelectList(_context.Genre, "Id", "Name", game.GenreId);
             return View(game);
         }
@@ -160,5 +213,7 @@ namespace RelationsNaN.Controllers
         {
             return _context.Game.Any(e => e.Id == id);
         }
+        #endregion
+
     }
 }
